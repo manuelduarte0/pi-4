@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Números</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { text-align: center; }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .controles {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        input[type="number"] {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #btnSortear { background: #FF5722; }
+        #btnSortear:hover { background: #E64A19; }
+        #btnCopiar {
+            background: #2196F3;
+            display: none;
+        }
+        #btnCopiar:hover { background: #1976D2; }
+        #resultado {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 100px;
+            font-size: 16px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .dica { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>Sorteador Aleatório</h1>
+    <p class="dica">Cole qualquer quantidade de números separados por vírgula, espaço ou enter</p>
+    
+    <textarea id="numeros" placeholder="Exemplo: 5, 12, 23, 47, 89..."></textarea>
+    
+    <div class="controles">
+        <input type="number" id="quantidade" placeholder="Quantos sortear?" min="1">
+        <button id="btnSortear" onclick="sortear()" style="flex: 2;">Sortear</button>
+    </div>
+    
+    <h3>Números sorteados:</h3>
+    <div id="resultado">Cole os números, escolha a quantidade e clique em Sortear</div>
+    <button id="btnCopiar" onclick="copiar()">Copiar números</button>
+
+    <script>
+        let numerosSorteados = [];
+
+        function sortear() {
+            let input = document.getElementById('numeros').value;
+            let qtd = parseInt(document.getElementById('quantidade').value);
+            
+            let todosNumeros = input.match(/\d+/g);
+            
+            if (!todosNumeros) {
+                document.getElementById('resultado').innerHTML = "Cola os números primeiro";
+                document.getElementById('btnCopiar').style.display = 'none';
+                return;
+            }
+            
+            // Remove repetidos e converte pra número
+            let listaUnica = [...new Set(todosNumeros.map(Number))];
+            
+            if (!qtd || qtd < 1) {
+                document.getElementById('resultado').innerHTML = "Escolhe quantos números quer sortear";
+                document.getElementById('btnCopiar').style.display = 'none';
+                return;
+            }
+            
+            if (qtd > listaUnica.length) {
+                document.getElementById('resultado').innerHTML = 
+                    `Você só colou ${listaUnica.length} números únicos. Não dá pra sortear ${qtd}.`;
+                document.getElementById('btnCopiar').style.display = 'none';
+                return;
+            }
+            
+            // Embaralha e pega os primeiros N
+            let embaralhados = listaUnica.sort(() => Math.random() - 0.5);
+            numerosSorteados = embaralhados.slice(0, qtd);
+            
+            document.getElementById('resultado').innerHTML = 
+                `<strong>${qtd} números sorteados:</strong><br><br>` + 
+                numerosSorteados.join(', ');
+            
+            document.getElementById('btnCopiar').style.display = 'block';
+        }
+
+        function copiar() {
+            navigator.clipboard.writeText(numerosSorteados.join(', '));
+            let btn = document.getElementById('btnCopiar');
+            btn.innerText = 'Copiado!';
+            setTimeout(() => {
+                btn.innerText = 'Copiar números';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
