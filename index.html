@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorteador de Números</title>
+    <title>Sorteador por Categorias</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 700px;
+            margin: 30px auto;
             padding: 20px;
             background: #f5f5f5;
         }
         h1 { text-align: center; }
         textarea {
             width: 100%;
-            height: 150px;
+            height: 120px;
             padding: 10px;
             font-size: 16px;
             border: 2px solid #333;
             border-radius: 8px;
             box-sizing: border-box;
         }
-        .controles {
+      .controles {
             display: flex;
             gap: 10px;
             margin: 15px 0;
@@ -30,7 +30,7 @@
         input[type="number"] {
             flex: 1;
             padding: 15px;
-            font-size: 18px;
+            font-size: 16px;
             border: 2px solid #333;
             border-radius: 8px;
             box-sizing: border-box;
@@ -39,15 +39,17 @@
             width: 100%;
             padding: 15px;
             margin: 5px 0;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
         }
-        #btnSortear { background: #FF5722; }
+        #btnSortear { background: #FF5722; flex: 2; }
         #btnSortear:hover { background: #E64A19; }
+        #btnCategoria { background: #9C27B0; }
+        #btnCategoria:hover { background: #7B1FA2; }
         #btnCopiar {
             background: #2196F3;
             display: none;
@@ -57,77 +59,124 @@
             background: white;
             padding: 15px;
             border-radius: 8px;
-            min-height: 100px;
-            font-size: 16px;
-            line-height: 1.6;
-            word-break: break-word;
+            min-height: 150px;
+            font-size: 15px;
+            line-height: 1.8;
         }
-        .dica { color: #666; font-size: 14px; }
+      .categoria {
+            margin-bottom: 12px;
+            padding: 8px;
+            border-left: 4px solid #9C27B0;
+            background: #f9f9f9;
+        }
+      .categoria strong { color: #9C27B0; }
+      .dica { color: #666; font-size: 14px; }
     </style>
 </head>
 <body>
-    <h1>Sorteador Aleatório</h1>
-    <p class="dica">Cole qualquer quantidade de números separados por vírgula, espaço ou enter</p>
+    <h1>Sorteador por Categorias</h1>
+    <p class="dica">PP=Par-Par | II=Ímpar-Ímpar | IP=Ímpar-Par | PI=Par-Ímpar | 02 conta como PP</p>
     
-    <textarea id="numeros" placeholder="Exemplo: 5, 12, 23, 47, 89..."></textarea>
+    <textarea id="numeros" placeholder="Cole seus números: 01, 02, 03... 100"></textarea>
     
     <div class="controles">
-        <input type="number" id="quantidade" placeholder="Quantos sortear?" min="1">
-        <button id="btnSortear" onclick="sortear()" style="flex: 2;">Sortear</button>
+        <input type="number" id="quantidade" placeholder="Qtd normal" min="1">
+        <button id="btnSortear" onclick="sortear()">Sortear Normal</button>
     </div>
     
-    <h3>Números sorteados:</h3>
-    <div id="resultado">Cole os números, escolha a quantidade e clique em Sortear</div>
-    <button id="btnCopiar" onclick="copiar()">Copiar números</button>
+    <div class="controles">
+        <input type="number" id="qtdCategoria" placeholder="Qtd por categoria" min="1" value="12">
+        <button id="btnCategoria" onclick="sortearCategoria()">Sortear por PP/II/IP/PI</button>
+    </div>
+    
+    <h3>Resultado:</h3>
+    <div id="resultado">Cole os números e use os botões</div>
+    <button id="btnCopiar" onclick="copiar()">Copiar Tudo</button>
 
     <script>
-        let numerosSorteados = [];
+        let textoResultado = '';
+
+        function getCategoria(numStr) {
+            // Mantém o zero da frente e força 2 dígitos pra números de 1 a 9
+            let str = numStr.toString().padStart(2, '0');
+            let primeiro = parseInt(str[0]);
+            let ultimo = parseInt(str[str.length - 1]);
+            
+            let primeiroPar = primeiro % 2 === 0;
+            let ultimoPar = ultimo % 2 === 0;
+            
+            if (primeiroPar && ultimoPar) return 'PP';
+            if (!primeiroPar &&!ultimoPar) return 'II';
+            if (!primeiroPar && ultimoPar) return 'IP';
+            if (primeiroPar &&!ultimoPar) return 'PI';
+        }
 
         function sortear() {
             let input = document.getElementById('numeros').value;
             let qtd = parseInt(document.getElementById('quantidade').value);
-            
             let todosNumeros = input.match(/\d+/g);
             
-            if (!todosNumeros) {
-                document.getElementById('resultado').innerHTML = "Cola os números primeiro";
-                document.getElementById('btnCopiar').style.display = 'none';
+            if (!todosNumeros ||!qtd) {
+                document.getElementById('resultado').innerHTML = "Preenche os números e a quantidade";
                 return;
             }
             
-            // Remove repetidos e converte pra número
-            let listaUnica = [...new Set(todosNumeros.map(Number))];
-            
-            if (!qtd || qtd < 1) {
-                document.getElementById('resultado').innerHTML = "Escolhe quantos números quer sortear";
-                document.getElementById('btnCopiar').style.display = 'none';
-                return;
-            }
-            
+            let listaUnica = [...new Set(todosNumeros)];
             if (qtd > listaUnica.length) {
-                document.getElementById('resultado').innerHTML = 
-                    `Você só colou ${listaUnica.length} números únicos. Não dá pra sortear ${qtd}.`;
-                document.getElementById('btnCopiar').style.display = 'none';
+                document.getElementById('resultado').innerHTML = `Só tem ${listaUnica.length} números únicos`;
                 return;
             }
             
-            // Embaralha e pega os primeiros N
             let embaralhados = listaUnica.sort(() => Math.random() - 0.5);
-            numerosSorteados = embaralhados.slice(0, qtd);
+            let sorteados = embaralhados.slice(0, qtd).map(n => parseInt(n));
             
-            document.getElementById('resultado').innerHTML = 
-                `<strong>${qtd} números sorteados:</strong><br><br>` + 
-                numerosSorteados.join(', ');
+            textoResultado = sorteados.join(', ');
+            document.getElementById('resultado').innerHTML = `<strong>${qtd} números sorteados:</strong><br><br>` + textoResultado;
+            document.getElementById('btnCopiar').style.display = 'block';
+        }
+
+        function sortearCategoria() {
+            let input = document.getElementById('numeros').value;
+            let qtdPorCat = parseInt(document.getElementById('qtdCategoria').value);
+            let todosNumeros = input.match(/\d+/g);
             
+            if (!todosNumeros ||!qtdPorCat) {
+                document.getElementById('resultado').innerHTML = "Preenche os números e a quantidade por categoria";
+                return;
+            }
+            
+            let listaUnica = [...new Set(todosNumeros)];
+            
+            // Separa por categoria mantendo string original
+            let categorias = { PP: [], II: [], IP: [], PI: [] };
+            listaUnica.forEach(numStr => {
+                let cat = getCategoria(numStr);
+                categorias[cat].push(numStr);
+            });
+            
+            // Sorteia de cada categoria
+            let resultado = '';
+            textoResultado = '';
+            
+            for (let cat of ['PP', 'II', 'IP', 'PI']) {
+                let disponiveis = categorias[cat].sort(() => Math.random() - 0.5);
+                let qtdReal = Math.min(qtdPorCat, disponiveis.length);
+                let sorteados = disponiveis.slice(0, qtdReal).map(n => parseInt(n));
+                
+                resultado += `<div class="categoria"><strong>${cat} - ${qtdReal} números:</strong><br>${sorteados.join(', ') || 'Nenhum'}</div>`;
+                textoResultado += `${cat}: ${sorteados.join(', ')}\n`;
+            }
+            
+            document.getElementById('resultado').innerHTML = resultado;
             document.getElementById('btnCopiar').style.display = 'block';
         }
 
         function copiar() {
-            navigator.clipboard.writeText(numerosSorteados.join(', '));
+            navigator.clipboard.writeText(textoResultado);
             let btn = document.getElementById('btnCopiar');
             btn.innerText = 'Copiado!';
             setTimeout(() => {
-                btn.innerText = 'Copiar números';
+                btn.innerText = 'Copiar Tudo';
             }, 2000);
         }
     </script>
