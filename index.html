@@ -5,14 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorteador por Categorias</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 20px;
             background: #f5f5f5;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        h1 { text-align: center; }
+        
+        /* MENU LATERAL */
+        #menuLateral {
+            width: 320px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+        #menuLateral.fechado {
+            transform: translateX(-320px);
+        }
+        #menuLateral h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #ecf0f1;
+        }
+        #btnToggleMenu {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1000;
+            background: #34495e;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+     .jogo-cadastrado {
+            background: #34495e;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+     .jogo-cadastrado h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #3498db;
+        }
+     .jogo-cadastrado p {
+            font-size: 13px;
+            color: #bdc3c7;
+            word-break: break-all;
+            max-height: 60px;
+            overflow-y: auto;
+        }
+     .jogo-cadastrado button {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #btnAdicionarJogo {
+            width: 100%;
+            padding: 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #btnAdicionarJogo:hover { background: #229954; }
+        #btnAdicionarJogo:disabled { background: #7f8c8d; cursor: not-allowed; }
+        
+        /* CONTEÚDO PRINCIPAL */
+        #principal {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            margin-left: 0;
+            transition: margin-left 0.3s;
+        }
+        #principal.comMenu {
+            margin-left: 320px;
+        }
+        h1 { text-align: center; margin-bottom: 10px; }
         textarea {
             width: 100%;
             height: 120px;
@@ -22,7 +109,7 @@
             border-radius: 8px;
             box-sizing: border-box;
         }
-      .controles {
+     .controles {
             display: flex;
             gap: 10px;
             margin: 15px 0;
@@ -63,41 +150,87 @@
             font-size: 15px;
             line-height: 1.8;
         }
-      .categoria {
+     .categoria {
             margin-bottom: 12px;
             padding: 8px;
             border-left: 4px solid #9C27B0;
             background: #f9f9f9;
         }
-      .categoria strong { color: #9C27B0; }
-      .dica { color: #666; font-size: 14px; }
+     .categoria strong { color: #9C27B0; }
+     .dica { color: #666; font-size: 14px; text-align: center; margin-bottom: 15px; }
+     .aviso { 
+            background: #fff3cd; 
+            border: 2px solid #ffc107; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+            color: #856404;
+        }
+     .info { 
+            background: #d1ecf1; 
+            border: 2px solid #0dcaf0; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+            color: #055160;
+        }
     </style>
 </head>
 <body>
-    <h1>Sorteador por Categorias</h1>
-    <p class="dica">PP=Par-Par | II=Ímpar-Ímpar | IP=Ímpar-Par | PI=Par-Ímpar | 02 conta como PP</p>
+    <button id="btnToggleMenu" onclick="toggleMenu()">☰</button>
     
-    <textarea id="numeros" placeholder="Cole seus números: 01, 02, 03... 100"></textarea>
-    
-    <div class="controles">
-        <input type="number" id="quantidade" placeholder="Qtd normal" min="1">
-        <button id="btnSortear" onclick="sortear()">Sortear Normal</button>
+    <!-- MENU LATERAL -->
+    <div id="menuLateral">
+        <h2>📋 Jogos Cadastrados</h2>
+        <div id="listaJogos"></div>
+        <button id="btnAdicionarJogo" onclick="adicionarJogo()">+ Adicionar Jogo Atual</button>
+        <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">
+            Cadastre 2 a 5 jogos com 45-55 números cada. O sorteio pode repetir números, só não pode gerar um jogo 100% igual.
+        </p>
     </div>
-    
-    <div class="controles">
-        <input type="number" id="qtdCategoria" placeholder="Qtd por categoria" min="1" value="12">
-        <button id="btnCategoria" onclick="sortearCategoria()">Sortear por PP/II/IP/PI</button>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div id="principal" class="comMenu">
+        <h1>Sorteador por Categorias</h1>
+        <p class="dica">PP=Par-Par | II=Ímpar-Ímpar | IP=Ímpar-Par | PI=Par-Ímpar | 02 conta como PP</p>
+        
+        <div class="info">
+            <strong>Regra:</strong> Pode repetir números dos jogos cadastrados. Só não pode gerar os 48 números idênticos a nenhum jogo do menu.
+        </div>
+        
+        <textarea id="numeros" placeholder="Cole seus números: 01, 02, 03... 100"></textarea>
+        
+        <div class="controles">
+            <input type="number" id="quantidade" placeholder="Qtd normal" min="1">
+            <button id="btnSortear" onclick="sortear()">Sortear Normal</button>
+        </div>
+        
+        <div class="controles">
+            <input type="number" id="qtdCategoria" placeholder="Qtd por categoria" min="1" value="12" disabled>
+            <button id="btnCategoria" onclick="sortearCategoria()">Gerar 48 Números (12 cada)</button>
+        </div>
+        
+        <div id="avisoJogos" class="aviso" style="display:none;">
+            ⚠️ Cadastre pelo menos 2 jogos no menu lateral para usar o gerador por categoria
+        </div>
+        
+        <h3>Resultado:</h3>
+        <div id="resultado">Cole os números e use os botões</div>
+        <button id="btnCopiar" onclick="copiar()">Copiar Tudo</button>
     </div>
-    
-    <h3>Resultado:</h3>
-    <div id="resultado">Cole os números e use os botões</div>
-    <button id="btnCopiar" onclick="copiar()">Copiar Tudo</button>
 
     <script>
         let textoResultado = '';
+        let jogosCadastrados = [];
+        let menuAberto = true;
+
+        function toggleMenu() {
+            menuAberto =!menuAberto;
+            document.getElementById('menuLateral').classList.toggle('fechado');
+            document.getElementById('principal').classList.toggle('comMenu');
+        }
 
         function getCategoria(numStr) {
-            // Mantém o zero da frente e força 2 dígitos pra números de 1 a 9
             let str = numStr.toString().padStart(2, '0');
             let primeiro = parseInt(str[0]);
             let ultimo = parseInt(str[str.length - 1]);
@@ -109,6 +242,78 @@
             if (!primeiroPar &&!ultimoPar) return 'II';
             if (!primeiroPar && ultimoPar) return 'IP';
             if (primeiroPar &&!ultimoPar) return 'PI';
+        }
+
+        function adicionarJogo() {
+            let input = document.getElementById('numeros').value;
+            let todosNumeros = input.match(/\d+/g);
+            
+            if (!todosNumeros) {
+                alert('Cole os números primeiro!');
+                return;
+            }
+            
+            let listaUnica = [...new Set(todosNumeros.map(n => parseInt(n)))];
+            
+            if (listaUnica.length < 45 || listaUnica.length > 55) {
+                alert(`O jogo precisa ter entre 45 e 55 números. Você tem ${listaUnica.length}.`);
+                return;
+            }
+            
+            if (jogosCadastrados.length >= 5) {
+                alert('Máximo de 5 jogos cadastrados!');
+                return;
+            }
+            
+            jogosCadastrados.push(listaUnica.sort((a,b) => a-b));
+            atualizarListaJogos();
+            atualizarBotoes();
+        }
+
+        function removerJogo(index) {
+            jogosCadastrados.splice(index, 1);
+            atualizarListaJogos();
+            atualizarBotoes();
+        }
+
+        function atualizarListaJogos() {
+            let html = '';
+            jogosCadastrados.forEach((jogo, i) => {
+                html += `
+                    <div class="jogo-cadastrado">
+                        <h3>Jogo ${i+1} (${jogo.length} números)</h3>
+                        <p>${jogo.join(', ')}</p>
+                        <button onclick="removerJogo(${i})">Remover</button>
+                    </div>
+                `;
+            });
+            document.getElementById('listaJogos').innerHTML = html || '<p style="color:#7f8c8d;">Nenhum jogo cadastrado</p>';
+        }
+
+        function atualizarBotoes() {
+            let btn = document.getElementById('btnAdicionarJogo');
+            let aviso = document.getElementById('avisoJogos');
+            
+            if (jogosCadastrados.length >= 5) {
+                btn.disabled = true;
+                btn.innerText = 'Limite Atingido (5 jogos)';
+            } else {
+                btn.disabled = false;
+                btn.innerText = `+ Adicionar Jogo Atual (${jogosCadastrados.length}/5)`;
+            }
+            
+            if (jogosCadastrados.length < 2) {
+                aviso.style.display = 'block';
+            } else {
+                aviso.style.display = 'none';
+            }
+        }
+
+        function arraysIguais(a, b) {
+            if (a.length!== b.length) return false;
+            let sortedA = [...a].sort((x,y) => x-y);
+            let sortedB = [...b].sort((x,y) => x-y);
+            return sortedA.every((val, i) => val === sortedB[i]);
         }
 
         function sortear() {
@@ -136,36 +341,83 @@
         }
 
         function sortearCategoria() {
+            if (jogosCadastrados.length < 2) {
+                alert('Cadastre pelo menos 2 jogos no menu lateral primeiro!');
+                return;
+            }
+            
             let input = document.getElementById('numeros').value;
-            let qtdPorCat = parseInt(document.getElementById('qtdCategoria').value);
             let todosNumeros = input.match(/\d+/g);
             
-            if (!todosNumeros ||!qtdPorCat) {
-                document.getElementById('resultado').innerHTML = "Preenche os números e a quantidade por categoria";
+            if (!todosNumeros) {
+                document.getElementById('resultado').innerHTML = "Cole os números primeiro";
                 return;
             }
             
             let listaUnica = [...new Set(todosNumeros)];
             
-            // Separa por categoria mantendo string original
+            // Separa por categoria
             let categorias = { PP: [], II: [], IP: [], PI: [] };
             listaUnica.forEach(numStr => {
                 let cat = getCategoria(numStr);
-                categorias[cat].push(numStr);
+                categorias[cat].push(parseInt(numStr));
             });
             
-            // Sorteia de cada categoria
+            // Verifica se tem pelo menos 12 de cada
+            for (let cat of ['PP', 'II', 'IP', 'PI']) {
+                if (categorias[cat].length < 12) {
+                    document.getElementById('resultado').innerHTML = 
+                        `❌ Erro: Só tem ${categorias[cat].length} números na categoria ${cat}. Precisa de pelo menos 12.`;
+                    return;
+                }
+            }
+            
+            // Tenta gerar um jogo que não seja IDÊNTICO a nenhum cadastrado
+            let tentativas = 0;
+            let jogoGerado;
+            let ehUnico = false;
+            
+            while (!ehUnico && tentativas < 2000) {
+                jogoGerado = [];
+                
+                for (let cat of ['PP', 'II', 'IP', 'PI']) {
+                    let disponiveis = [...categorias[cat]].sort(() => Math.random() - 0.5);
+                    let sorteados = disponiveis.slice(0, 12);
+                    jogoGerado = jogoGerado.concat(sorteados);
+                }
+                
+                // Verifica se não é 100% igual a nenhum cadastrado
+                ehUnico =!jogosCadastrados.some(jogo => arraysIguais(jogo, jogoGerado));
+                tentativas++;
+            }
+            
+            if (!ehUnico) {
+                document.getElementById('resultado').innerHTML = 
+                    '⚠️ Não foi possível gerar um jogo único após 2000 tentativas. Isso significa que todas combinações possíveis já batem com algum jogo cadastrado. Adicione mais números ou cadastre jogos diferentes.';
+                return;
+            }
+            
+            // Monta resultado e conta repetidos
             let resultado = '';
             textoResultado = '';
+            let totalRepetidos = 0;
             
             for (let cat of ['PP', 'II', 'IP', 'PI']) {
-                let disponiveis = categorias[cat].sort(() => Math.random() - 0.5);
-                let qtdReal = Math.min(qtdPorCat, disponiveis.length);
-                let sorteados = disponiveis.slice(0, qtdReal).map(n => parseInt(n));
+                let sorteados = jogoGerado.filter(n => getCategoria(n.toString()) === cat).sort((a,b) => a-b);
                 
-                resultado += `<div class="categoria"><strong>${cat} - ${qtdReal} números:</strong><br>${sorteados.join(', ') || 'Nenhum'}</div>`;
+                // Conta quantos repetem em algum jogo cadastrado
+                let repetidos = sorteados.filter(n => 
+                    jogosCadastrados.some(jogo => jogo.includes(n))
+                ).length;
+                totalRepetidos += repetidos;
+                
+                resultado += `<div class="categoria"><strong>${cat} - 12 números:</strong> (${repetidos} repetem de jogos cadastrados)<br>${sorteados.join(', ')}</div>`;
                 textoResultado += `${cat}: ${sorteados.join(', ')}\n`;
             }
+            
+            resultado += `<div style="margin-top:15px; padding:10px; background:#d4edda; border-radius:8px; color:#155724;">
+                ✅ Jogo gerado com sucesso! Tem ${totalRepetidos} números que já existem em jogos cadastrados, mas não é 100% igual a nenhum.
+            </div>`;
             
             document.getElementById('resultado').innerHTML = resultado;
             document.getElementById('btnCopiar').style.display = 'block';
@@ -179,6 +431,9 @@
                 btn.innerText = 'Copiar Tudo';
             }, 2000);
         }
+
+        atualizarListaJogos();
+        atualizarBotoes();
     </script>
 </body>
 </html>
