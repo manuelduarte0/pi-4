@@ -220,7 +220,7 @@
         </div>
         
         <div id="avisoJogos" class="aviso" style="display:none;">
-            ⚠️ Cadastre pelo menos 2 jogos no menu lateral para usar o gerador por categoria
+            ⚠️ Cadastre pelo menos 5 jogos no menu lateral para usar o gerador por categoria
         </div>
         
         <h3>Resultado:</h3>
@@ -350,8 +350,8 @@
         }
 
         function sortearCategoria() {
-            if (jogosCadastrados.length < 2) {
-                alert('Cadastre pelo menos 2 jogos no menu lateral primeiro!');
+            if (jogosCadastrados.length < 5) {
+                alert('Cadastre pelo menos 5 jogos no menu lateral primeiro!');
                 return;
             }
             
