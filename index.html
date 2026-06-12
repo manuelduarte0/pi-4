@@ -194,7 +194,7 @@
         <div id="listaJogos"></div>
         <button id="btnAdicionarJogo" onclick="adicionarJogo()">+ Adicionar Jogo Atual</button>
         <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">
-            Cadastre 2 a 5 jogos com 45-55 números cada. O sorteio pode repetir números, só não pode gerar um jogo 100% igual.
+            Cadastre 5 a 10 jogos com 45-55 números cada. O sorteio pode repetir números, só não pode gerar um jogo 100% igual.
         </p>
     </div>
 
@@ -269,8 +269,8 @@
                 return;
             }
             
-            if (jogosCadastrados.length >= 5) {
-                alert('Máximo de 5 jogos cadastrados!');
+            if (jogosCadastrados.length >= 10) {
+                alert('Máximo de 10 jogos cadastrados!');
                 return;
             }
             
@@ -303,15 +303,15 @@
             let btn = document.getElementById('btnAdicionarJogo');
             let aviso = document.getElementById('avisoJogos');
             
-            if (jogosCadastrados.length >= 5) {
+            if (jogosCadastrados.length >= 10) {
                 btn.disabled = true;
-                btn.innerText = 'Limite Atingido (5 jogos)';
+                btn.innerText = 'Limite Atingido (10 jogos)';
             } else {
                 btn.disabled = false;
-                btn.innerText = `+ Adicionar Jogo Atual (${jogosCadastrados.length}/5)`;
+                btn.innerText = `+ Adicionar Jogo Atual (${jogosCadastrados.length}/10)`;
             }
             
-            if (jogosCadastrados.length < 2) {
+            if (jogosCadastrados.length < 5) {
                 aviso.style.display = 'block';
             } else {
                 aviso.style.display = 'none';
